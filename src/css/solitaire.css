@@ -1,0 +1,282 @@
+html, body {
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: helvetica, arial, sans-serif;
+}
+
+#menu {
+    width: 100%;
+    height: 40px;
+    padding: 0px;
+    padding-top: 10px;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 0;
+    background: radial-gradient(black 15%, transparent 16%) 0 0,
+radial-gradient(black 15%, transparent 16%) 8px 8px,
+radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 0 1px,
+radial-gradient(rgba(255,255,255,.1) 15%, transparent 20%) 8px 9px;
+    background-color: #282828;
+    background-size: 16px 16px;
+    -webkit-box-shadow: inset 3px 3px 171px 9px rgba(0,0,0,0.57);
+    -moz-box-shadow: inset 3px 3px 171px 9px rgba(0,0,0,0.57);
+    box-shadow: inset 3px 3px 171px 9px rgba(0,0,0,0.57);
+    color: grey;
+}
+
+#menu a {
+    color: grey;
+    text-decoration: none;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-bottom: 0;
+    border-top: 0;
+    border-left: 0;
+    border-right: 1px;
+    border-color: grey;
+    border-style: solid;
+    margin-bottom: 15px;
+}
+
+#game_board {
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    position: absolute;
+    left: 0px;
+    top: 40px;
+    z-index: 0;
+    background: url('../images/felt.png');
+    background-repeat: repeat;
+    -webkit-box-shadow: inset 3px 3px 171px 9px rgba(0,0,0,0.57);
+    -moz-box-shadow: inset 3px 3px 171px 9px rgba(0,0,0,0.57);
+    box-shadow: inset 3px 3px 171px 9px rgba(0,0,0,0.57);
+}
+
+#game_board.loading {
+    padding-top: 50px;
+    color: white;
+    font-size: 1.6em;
+    text-align: center;
+}
+
+#game_board img,
+#game_board div {
+    display: block;
+    position: absolute;
+    margin: 0px;
+}
+
+#game_board img {
+    -webkit-box-shadow: 2px 2px 8px -2px rgba(0,0,0,0.40);
+    -moz-box-shadow: 2px 2px 8px -2px rgba(0,0,0,0.40);
+    box-shadow: 2px 2px 8px -2px rgba(0,0,0,0.40);
+}
+
+#game_board .stock,
+#game_board .foundation,
+#game_board .tableau {
+    z-index: 0;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    border-style: solid;
+    border-width: 3px;
+    border-color: #060;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+}
+
+
+
+/* **************************************************************** */
+/* For modal dialog */
+
+button {
+    border: none;
+    padding: 0.6em 1.2em;
+    background: #39c02b;
+    color: #fff;
+    font-family: 'Lato', Calibri, Arial, sans-serif;
+    font-size: 1em;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: inline-block;
+    margin: 3px 2px;
+    border-radius: 2px;
+}
+
+button:hover {
+    background: #28A51B;
+}
+
+.md-content img {
+    float: right;
+    margin: 20px;
+    margin-right: 0px;
+    width: 100%;
+    max-width: 398px;
+}
+
+.md-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 60%;
+    max-width: 1000px;
+    min-width: 100px;
+    height: auto;
+    z-index: 2000;
+    visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform: translateX(-50%) translateY(-50%);
+    -moz-transform: translateX(-50%) translateY(-50%);
+    -ms-transform: translateX(-50%) translateY(-50%);
+    transform: translateX(-50%) translateY(-50%);
+}
+
+.md-show {
+    visibility: visible;
+    overflow: auto;
+}
+
+.md-overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    visibility: hidden;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    opacity: 0;
+/* background: rgba(143,27,15,0.8); */
+    background: rgba(27,143,15,0.8);
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.md-show ~ .md-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Content styles */
+.md-content {
+    color: #000;
+    background: #fff;
+    position: relative;
+    border-radius: 3px;
+    margin: 0 auto;
+}
+
+.md-content h3 {
+    margin: 0;
+    padding: 0.4em;
+    text-align: center;
+    font-size: 2.0em;
+/*font-weight: 300;*/
+    opacity: 0.8;
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px 3px 0 0;
+}
+
+.md-content > div {
+    padding: 7px 20px 15px;
+    margin: 0;
+/*font-weight: 300;*/
+    font-size: 0.9em;
+}
+
+.md-content > div p {
+    margin: 0;
+    padding: 10px 0;
+}
+
+.md-content > div ul {
+    margin: 0;
+    padding: 0 0 30px 20px;
+}
+
+.md-content > div ul li {
+    padding: 5px 0;
+}
+
+.md-content button {
+    display: block;
+    margin: 0 auto;
+    font-size: 0.8em;
+}
+
+/* Individual modal styles with animations/transitions */
+
+/* Effect 1: Fade in and scale up */
+.md-effect-1 .md-content {
+    -webkit-transform: scale(0.7);
+    -moz-transform: scale(0.7);
+    -ms-transform: scale(0.7);
+    transform: scale(0.7);
+    opacity: 0;
+}
+
+.md-show.md-effect-1 .md-content {
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    transform: scale(1);
+    opacity: 1;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+
+/* **************************************************************** */
+/* for fireworks */
+canvas {
+    -webkit-transform: translateZ(0);
+    opacity: 0.85;
+    position: absolute;
+    z-index: 1000;
+}
+
+
+/* ************************ */
+/* for small screen */
+
+@media (max-width: 600px) {
+    #menu {
+        height: 80px;
+    }
+
+    #menu a {
+        display: inline-block;
+    }
+
+    #game_board {
+        top: 80px;
+    }
+
+    .md-modal {
+        width: 100%;
+        height: 100%;
+    }
+
+    .md-content  h3 {
+        font-size: 0.6em;
+    }
+
+    .md-content > div {
+        padding: 3px 10px 7px;
+        font-size: 0.7em;
+    }
+}

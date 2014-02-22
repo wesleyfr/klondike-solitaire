@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+        <title>Solitaire</title>
+        <meta name="description" content="Play classic solitaire (klondike) card game, online and for free">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
+        <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
+        <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
+        <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
+        <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196">
+        <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+        <meta name="msapplication-TileColor" content="#da532c">
+        <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+
+        <link rel="stylesheet" href="css/solitaire.css">
+    </head>
+    <body>
+        <h1>Solitaire</h1>
+        
+        <div id="menu">
+            <a href="#" id="new_game">New game</a>
+            <a href="#" id="restart_game">Restart game</a>
+            <a href="#" class="md-trigger" data-modal="modal_show_rules">Show rules</a>
+        </div>
+        <div id="game_board" class="loading">Game is loading...</div>
+
+        <div class="md-modal md-effect-1" id="modal_show_rules">
+            <div class="md-content">
+                <h3>Klondike Solitaire Rules</h3>
+                <div>
+                    <img src="images/klondike.png" alt="Klondike solitaire rules" />
+                    <p><strong>Initial Layout:</strong> The tableau consists of seven columns, with the first column containing one card, the second column two cards, the third column three cards, and so on. The top card of each column is face-up; the remainder of the cards are face-down. The 24 unplayed cards are left face-down to form the stock.</p>
+                    <p><strong>Object:</strong> The object of the game is to move the four aces, as they appear, to the foundations, and build each up in suit from ace to king (A-2-3-4-5-6-7-8-9-10-J-Q-K).</p>
+                    <p><strong>Play:</strong> Turn card face-up from the stock one at a time onto a wastepile. The top card of the wastepile may be played onto the tableau or foundations. Likewise, the top card of each tableau pile is available for play onto the foundations or another tableau pile. Cards within the tableau may be build down in sequence and alternating color. A sequence of cards may be moved as a unit from one pile to another. When a face-down tableau card is exposed, turn it face-up. If a space is created in the tableau, it may only be filled with a king. The stock may be recycled from the wastepile when it becomes empty. The game ends when either all foundations are filled (in which case you've won), or when no more moves are possible (or when the only possible move is to recycle the stock). In this case you've lost.</p>
+                    <button class="md-close">close</button>
+                </div>
+            </div>
+        </div>
+    
+        <div class="md-overlay"></div>
+
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.11.4/TweenLite.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.11.4/plugins/CSSPlugin.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.11.4/utils/Draggable.min.js"></script>
+
+        <script src="bundle.js"></script>
+
+    </body>
+</html>
