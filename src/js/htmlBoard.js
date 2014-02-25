@@ -24,7 +24,7 @@ HtmlBoard.prototype.initializeGame = function() {
         board.getFoundationStacks(),
         board.getTableauStacks(),
         board.getStockStack())
-    this.dropZoneStacks = this._createHtmlDropZoneStacks(stacks)
+    this.htmlStacks = this._createHtmlStacks(stacks)
 
     this._listenForGameStateChanges();
     this._listenForHtmlBoardResize();
@@ -124,39 +124,27 @@ HtmlBoard.prototype._createHtmlCards = function(cards) {
             bounds: this.htmlBoardContainer,
             zIndexBoost: false,
             cursor: "pointer",
+
             onDragStartParams: [this, htmlCard],
             onDragStart: function(htmlBoard, htmlCard) {
                 this.isReallyADrag = false;
             },
+
             onDragParams: [this, htmlCard],
             onDrag: function(htmlBoard, htmlCard) {
                 if (this.isReallyADrag == false) {
                     this.isReallyADrag = true;
-                    this.htmlCardsOnTop = htmlBoard._gethtmlCardsOnTop(htmlCard);
-                    htmlBoard._boostZIndex(this.htmlCardsOnTop.concat(htmlCard), 200);
+                    htmlBoard._onDragStart(this, htmlCard);
                 }
-                if (this.htmlCardsOnTop.length == 0)
-                    return;
-
-                var len = this.htmlCardsOnTop.length;
-                for (var i = 0; i < len; i++) {
-                    htmlCardToMove = this.htmlCardsOnTop[i];
-                    TweenLite.to(htmlCardToMove, 0, {
-                        x: htmlCard._gsTransform.x,
-                        y: htmlCard._gsTransform.y + (len - i) * htmlBoard.cardOverlapHeight
-                    });
-                };
+                htmlBoard._onDrag(this, htmlCard);
             },
+
             onDragEndParams: [this, htmlCard],
             onDragEnd: function(htmlBoard, htmlCard) {
-
-                if (this.isReallyADrag == false)
-                    return;
-
-                htmlBoard._boostZIndex(this.htmlCardsOnTop.concat(htmlCard), -200);
-                htmlBoard._onCardDragged(htmlCard, this.htmlCardsOnTop, this.endX, this.endY);
-
+                if (this.isReallyADrag)
+                    htmlBoard._onDragEnd(this, htmlCard);
             },
+
             onClickParams: [this, htmlCard],
             onClick: function(htmlBoard, htmlCard) {
                 htmlBoard._onCardClicked(htmlCard)
@@ -172,9 +160,106 @@ HtmlBoard.prototype._createHtmlCards = function(cards) {
     return htmlCards;
 }
 
+HtmlBoard.prototype._onDragStart = function(draggableObj, htmlCard) {
+    draggableObj.htmlCardsOnTop = this._gethtmlCardsOnTop(htmlCard);
+    this._boostZIndex(draggableObj.htmlCardsOnTop.concat(htmlCard), 200);
+}
+
+HtmlBoard.prototype._onDrag = function(draggableObj, htmlCard) {
+
+    if (draggableObj.htmlCardsOnTop.length == 0)
+        return;
+
+    var len = draggableObj.htmlCardsOnTop.length;
+    for (var i = 0; i < len; i++) {
+        htmlCardToMove = draggableObj.htmlCardsOnTop[i];
+        TweenLite.to(htmlCardToMove, 0, {
+            x: htmlCard._gsTransform.x,
+            y: htmlCard._gsTransform.y + (len - i) * this.cardOverlapHeight
+        });
+    };
+
+}
+
+HtmlBoard.prototype._onDragEnd = function(draggableObj, htmlCard) {
+
+    var allHtmlCardsDragged = draggableObj.htmlCardsOnTop.concat(htmlCard);
+    this._boostZIndex(allHtmlCardsDragged, -200);
+
+    var visibleHtmlCards = this._getVisibleHtmlCards(allHtmlCardsDragged);
+    var allDropZone = this.htmlStacks.concat(visibleHtmlCards);
+
+    var dropZoneCandidates = [];
+    for (var i = allDropZone.length - 1; i >= 0; i--) {
+        if (draggableObj.hitTest(allDropZone[i]))
+            dropZoneCandidates.push(allDropZone[i]);
+    };
+    console.log("all candidates are", dropZoneCandidates);
+    if (dropZoneCandidates.length > 0) {
+
+        var nearestCandidate = this._findNearestElement(htmlCard, dropZoneCandidates);
+
+        console.log("nearestCandidate is", nearestCandidate);
+
+        var targetStack;
+        if ('sourceCard' in nearestCandidate) {
+            targetStack = nearestCandidate.sourceCard.parentStack;
+        } else {
+            targetStack = nearestCandidate.sourceStack;
+        }
+
+        moveOk = this.game.board.moveToStack(htmlCard.sourceCard, targetStack);
+        console.log("moveok", moveOk);
+        if (moveOk)
+            return;
+    }
+
+    this._placeHtmlCards(allHtmlCardsDragged);
+}
 
 
-HtmlBoard.prototype._createHtmlDropZoneStacks = function(stacks) {
+
+HtmlBoard.prototype._getVisibleHtmlCards = function(exclusionList) {
+    var l = [];
+    for (var i = this.htmlCards.length - 1; i >= 0; i--) {
+        var currCard = this.htmlCards[i];
+
+        var isInExclusionList = false;
+        for (var j = exclusionList.length - 1; j >= 0; j--) {
+            if (currCard === exclusionList[j]) {
+                isInExclusionList = true;
+                break;
+            }
+        }
+
+        if (isInExclusionList == false && currCard.sourceCard.isHidden() == false)
+            l.push(currCard);
+    };
+
+    return l;
+}
+
+HtmlBoard.prototype._findNearestElement = function(originElement, candidates) {
+    var nearest = null;
+    var minLineLength = null;
+
+    var originX = originElement._gsTransform.x;
+    var originY = originElement._gsTransform.y;
+
+    for (var i = candidates.length - 1; i >= 0; i--) {
+        var cX = candidates[i]._gsTransform.x;
+        var cY = candidates[i]._gsTransform.y;
+        var currLineLength = this._lineLength(originX, originY, cX, cY)
+        if (minLineLength == null || currLineLength < minLineLength) {
+            minLineLength = currLineLength;
+            nearest = candidates[i];
+        }
+    };
+    return nearest;
+}
+
+
+HtmlBoard.prototype._createHtmlStacks = function(stacks) {
     var dropZoneStacks = [];
     for (var i = stacks.length - 1; i >= 0; i--) {
         var stack = stacks[i];
@@ -186,20 +271,24 @@ HtmlBoard.prototype._createHtmlDropZoneStacks = function(stacks) {
         addClass(div, "dropZoneStack");
         addClass(div, stackName);
 
-        toPx = function(nb) {
-            return nb.toString() + "px";
-        }
-
         coord = this._findDropZoneStackCoordinate(stack);
-        div.style.left = toPx(coord[0]);
-        div.style.top = toPx(coord[1]);
-        div.style.width = toPx(this.cardWidth);
-        div.style.height = toPx(this.cardHeight);
+        TweenLite.to(div, 0, {
+            x: coord[0],
+            y: coord[1],
+            width: this.cardWidth,
+            height: this.cardHeight
+        });
 
         this.htmlBoardContainer.appendChild(div);
 
         dropZoneStacks.push(div);
+
+        var d = Draggable.create(div, {
+            bounds: this.htmlBoardContainer
+        });
+        d[0].disable();
     };
+
     return dropZoneStacks;
 }
 
@@ -218,8 +307,8 @@ HtmlBoard.prototype._listenForHtmlBoardResize = function() {
 }
 
 HtmlBoard.prototype._listenForDropZoneStacksClicks = function() {
-    for (var i = this.dropZoneStacks.length - 1; i >= 0; i--) {
-        var div = this.dropZoneStacks[i];
+    for (var i = this.htmlStacks.length - 1; i >= 0; i--) {
+        var div = this.htmlStacks[i];
         if (div.sourceStack.getName() == "stock") {
             _onStockContainerClicked = bind(this._onStockContainerClicked, this);
             addEventListener(div, "click", _onStockContainerClicked);
@@ -277,29 +366,9 @@ HtmlBoard.prototype._onCardHidded = function(event, card) {
     this._flipCardWithImage(card, imgUrl);
 }
 
-HtmlBoard.prototype._onCardDragged = function(htmlCard, htmlCardsOnTop, x, y) {
-    targetedCard = this._findAdjacentCard(htmlCard, x, y);
-    if (targetedCard != null) {
-        moveOk = this.game.board.moveToStack(htmlCard.sourceCard, targetedCard.parentStack);
-        if (moveOk)
-            return;
-    }
-    targetedStack = this._findAdjacentStack(htmlCard, x, y);
-    if (targetedStack != null) {
-        moveOk = this.game.board.moveToStack(htmlCard.sourceCard, targetedStack);
-        if (moveOk)
-            return;
-    }
-    for (var i = htmlCardsOnTop.length - 1; i >= 0; i--) {
-        this._placeHtmlCard(htmlCardsOnTop[i]);
-    };
-    this._placeHtmlCard(htmlCard);
-}
-
 HtmlBoard.prototype._onGameWon = function(event, board) {
     Fireworks.initialize("You win!", this.htmlBoardContainer);
 }
-
 
 HtmlBoard.prototype._onCardClicked = function(htmlCard) {
     var card = htmlCard.sourceCard;
@@ -330,13 +399,13 @@ HtmlBoard.prototype._onHtmlBoardResized = function() {
         });
     };
 
-    for (var i = 0; i < this.dropZoneStacks.length; i++) {
-        var dz = this.dropZoneStacks[i];
+    for (var i = 0; i < this.htmlStacks.length; i++) {
+        var dz = this.htmlStacks[i];
         f = dz.sourceStack;
         coord = this._findDropZoneStackCoordinate(f);
         TweenLite.to(dz, 1, {
-            left: coord[0],
-            top: coord[1],
+            x: coord[0],
+            y: coord[1],
             width: this.cardWidth,
             height: this.cardHeight,
             ease: Power2.easeInOut
@@ -415,67 +484,16 @@ HtmlBoard.prototype._gethtmlCardsOnTop = function(htmlCard) {
     return htmlCardOnTop;
 }
 
-HtmlBoard.prototype._findAdjacentCard = function(htmlCard, x, y) {
-
-    tableauStacks = this.game.board.getTableauStacks();
-
-    var candidat = null;
-    var candidatDistance = null;
-
-    var cardString = htmlCard.sourceCard.toString();
-    for (var i = tableauStacks.length - 1; i >= 0; i--) {
-        lastCard = tableauStacks[i].getLastCard();
-
-        if (lastCard == null || lastCard.toString() == cardString)
-            continue;
-
-        lastCardCoord = this._findCardCoordinate(lastCard);
-
-        intersect = this._intersectRect(x, y,
-            this.cardWidth, this.cardHeight,
-            lastCardCoord[0], lastCardCoord[1],
-            this.cardWidth, this.cardHeight);
-
-        if (intersect) {
-            lastCardDistance = this._lineLength(x, y, lastCardCoord[0], lastCardCoord[1]);
-            if (candidatDistance == null || lastCardDistance < candidatDistance) {
-                candidatDistance = lastCardDistance;
-                candidat = lastCard;
-            }
-        }
-    };
-
-    return candidat;
-}
-
-HtmlBoard.prototype._findAdjacentStack = function(htmlCard, x, y) {
-    for (var i = this.dropZoneStacks.length - 1; i >= 0; i--) {
-        stack = this.dropZoneStacks[i].sourceStack;
-
-        coord = this._findDropZoneStackCoordinate(stack);
-
-        intersect = this._intersectRect(x, y,
-            this.cardWidth, this.cardHeight,
-            coord[0], coord[1],
-            this.cardWidth, this.cardHeight);
-
-        if (intersect)
-            return stack;
-    };
-    return null;
-}
-
-HtmlBoard.prototype._intersectRect = function(x1, y1, w1, h1, x2, y2, w2, h2) {
-    return !(x2 > (x1 + w1) ||
-        (x2 + w2) < x1 ||
-        y2 > (y1 + h1) ||
-        (y2 + h2) < y1);
-}
-
 HtmlBoard.prototype._lineLength = function(x, y, x0, y0) {
     var xd = Math.abs(x0 - x);
     var yd = Math.abs(y0 - y);
     return Math.sqrt(xd * xd + yd * yd);
+}
+
+HtmlBoard.prototype._placeHtmlCards = function(htmlCards) {
+    for (var i = htmlCards.length - 1; i >= 0; i--) {
+        this._placeHtmlCard(htmlCards[i]);
+    };
 }
 
 HtmlBoard.prototype._placeHtmlCard = function(htmlCard, noDelay) {
@@ -532,7 +550,7 @@ HtmlBoard.prototype._findDropZoneStackCoordinate = function(stack) {
             break;
 
         case "tableau":
-            x = (this.paddingLeft + this.cardWidth) * (2 + stack.getIndex()) + this.paddingLeft;
+        x = (this.paddingLeft + this.cardWidth) * (2 + stack.getIndex()) + this.paddingLeft;
             y = (this.paddingTop + this.cardHeight) + this.paddingTop;
             break;
 
