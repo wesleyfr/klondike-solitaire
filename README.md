@@ -2,7 +2,7 @@ Readme
 ======
 Simple Klondike (Solitaire) game using [GreenSock] [greensock].
 
-Demo: http://solitairemaniac.com
+Demo: http://wesleyfr.github.io/klondike-solitaire/src
 
 
 Setup environment
